@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting" xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:json="http://www.mulesoft.org/schema/mule/json" 
+	xmlns:db="http://www.mulesoft.org/schema/mule/db" 
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.6.1"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd" >
+    <flow name="processEdge" processingStrategy="synchronous" tracking:enable-default-events="true">
+        <vm:inbound-endpoint exchange-pattern="one-way" path="processEdge" doc:name="receive post message"/>
+<!--         <tracking:transaction id="#['processEdge-parentId(' + message.inboundProperties.'parentId' + ')-' + message.inboundProperties.'objectType' + '(' + message.inboundProperties.'postId' + ')-page(' + message.inboundProperties.'pageCount' + ')']"/> -->
+        <expression-component doc:name="set flowVars"><![CDATA[flowVars.pageId = message.inboundProperties.'pageId';
+flowVars.pageName = message.inboundProperties.'pageName';
+flowVars.parentId = message.inboundProperties.'parentId';
+flowVars.objectType = message.inboundProperties.'objectType';
+flowVars.startDate = message.inboundProperties.'startDate';
+flowVars.endDate = message.inboundProperties.'endDate';
+flowVars.pageCount = message.inboundProperties.'pageCount' + 0;
+flowVars.resultsPageNumber = message.inboundProperties.'pageCount';]]></expression-component>
+        <choice doc:name="Choice">
+            <when expression="#[message.inboundProperties.?after == null]">
+                <http:request config-ref="HTTP_Facebook_API" path="/{post_id}/{objectId}s" method="GET" doc:name="Get first page">
+                    <http:request-builder>
+                        <http:query-param paramName="summary" value="true"/>
+                        <http:query-param paramName="since" value="#[sessionVars.startDate]"/>
+                        <http:query-param paramName="until" value="#[sessionVars.endDate]"/>
+                        <http:query-param paramName="date_format" value="${facebook.api.date_format}"/>
+                        <http:query-param paramName="limit" value="${facebook.api.limit}"/>
+                        <http:uri-param paramName="post_id" value="#[flowVars.'parentId']"/>
+                        <http:uri-param paramName="objectId" value="#[flowVars.'objectType']"/>
+                        <http:header headerName="Authorization" value="Bearer ${facebook.api.access_token}"/>
+                    </http:request-builder>
+                </http:request>
+            </when>
+            <otherwise>
+                <logger message="#[flow.'name'] get page #[flowVars.'pageCount'] for parentId (#[flowVars.'parentId']" level="INFO" doc:name="Logger"/>
+                <http:request config-ref="HTTP_Facebook_API" path="/{post_id}/{objectId}s" method="GET" doc:name="Get next page">
+                    <http:request-builder>
+                        <http:query-param paramName="limit" value="${facebook.api.limit}"/>
+                        <http:query-param paramName="after" value="#[message.inboundProperties['until']]"/>
+                        <http:query-param paramName="summary" value="true"/>
+                        <http:query-param paramName="since" value="#[sessionVars.startDate]"/>
+                        <http:query-param paramName="date_format" value="${facebook.api.date_format}"/>
+                        <http:uri-param paramName="post_id" value="#[message.inboundProperties.'parentId']"/>
+                        <http:uri-param paramName="objectId" value="#[flowVars.objectType]"/>
+                        <http:header headerName="Authorization" value="Bearer ${facebook.api.access_token}"/>
+                    </http:request-builder>
+                </http:request>
+            </otherwise>
+        </choice>
+        <json:json-to-object-transformer returnClass="java.util.Map" doc:name="JSON to Object"/>
+        <choice doc:name="last page">
+            <when expression="#[payload.?paging != null]">
+                <set-variable variableName="pagingInfo" value="#[payload['paging'].cursors.?after]" doc:name="save pagingInfo"/>
+                <choice doc:name="Choice">
+                    <when expression="#[payload.data.size() &gt; 0]">
+                        <set-payload value="#[payload['data']]" doc:name="extract collection"/>
+                        <tracking:custom-event event-name="pageInfo" doc:name="Custom Business Event">
+                            <tracking:meta-data key="startDate" value="#[sessionVars.startDate]"/>
+                            <tracking:meta-data key="endDate" value="#[sessionVars.endDate]"/>
+                            <tracking:meta-data key="pageId" value="#[flowVars.pageId]"/>
+                            <tracking:meta-data key="pageName" value="#[flowVars.pageName]"/>
+                            <tracking:meta-data key="resultsPageNumber" value="#[flowVars.pageCount]"/>
+                            <tracking:meta-data key="parentId" value="#[flowVars.parentId]"/>
+                            <tracking:meta-data key="parentObjectType" value="#[flowVars.objectType]"/>
+                        </tracking:custom-event>
+                        <foreach doc:name="For Each Edge">
+                            <expression-component doc:name="augment payload"><![CDATA[flowVars.queueName = "process" + flowVars.'objectType';
+message.outboundProperties.'id' = payload.id;
+
+payload.put('parentId', flowVars.parentId);
+payload.put('objectType', flowVars.objectType);
+payload.put('startDate', flowVars.startDate);
+payload.put('endDate', flowVars.endDate);
+payload.put('pageId', flowVars.pageId);
+payload.put('pageName', flowVars.pageName);
+payload.put('resultsPageNumber', flowVars.resultsPageNumber);
+]]></expression-component>
+                            <vm:outbound-endpoint exchange-pattern="request-response" path="#[flowVars.queueName]" doc:name="put message on edge queue"/>
+                        </foreach>
+                        <message-properties-transformer doc:name="Put paging info into Message Properties">
+                            <add-message-property key="pageCount" value="#[flowVars.pageCount]"/>
+                            <add-message-property key="after" value="#[flowVars.?pagingInfo]"/>
+                            <add-message-property key="parentId" value="#[flowVars['parentId']]"/>
+                            <add-message-property key="objectType" value="#[flowVars['objectType']]"/>
+                        </message-properties-transformer>
+                        <vm:outbound-endpoint exchange-pattern="one-way" path="processEdge" doc:name="get next page"/>
+                    </when>
+                    <otherwise>
+                        <logger message="#[flow.'name'] parentId (#[flowVars.'parentId'] has NO #[flowVars.'objectType']" level="INFO" doc:name="Logger"/>
+                    </otherwise>
+                </choice>
+            </when>
+            <otherwise>
+                <logger message="#[flow.'name'] parentId #[flowVars.'parentId'] had #[payload.summary.'total_count'] #[flowVars.'objectType']" level="INFO" doc:name="log last page"/>
+            </otherwise>
+        </choice>
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
+            <logger message="Invalid JSON" level="INFO" doc:name="Logger"/>
+        </catch-exception-strategy>
+    </flow>
+    <flow name="processLike" tracking:enable-default-events="true">
+        <vm:inbound-endpoint exchange-pattern="request-response" path="processlike" doc:name="receive message"/>
+<!--         <tracking:transaction id="#['processLike-id(' + payload.'id' + ')-parentId(' + payload.'parentId' + ')-page(' + payload.'resultsPageNumber' + ')']"/> -->
+        <set-variable variableName="like" value="#[payload]" doc:name="Save like"/>
+        <tracking:custom-event event-name="pageInfo" doc:name="Custom Business Event">
+            <tracking:meta-data key="startDate" value="#[sessionVars.startDate]"/>
+            <tracking:meta-data key="endDate" value="#[sessionVars.endDate]"/>
+            <tracking:meta-data key="pageId" value="#[payload.pageId]"/>
+            <tracking:meta-data key="pageName" value="#[payload.pageName]"/>
+            <tracking:meta-data key="postPageResultsPageNumber" value="#[payload.resultsPageNumber]"/>
+            <tracking:meta-data key="parentId" value="#[payload.parentId]"/>
+            <tracking:meta-data key="parentObjectType" value="#[payload.objectType]"/>
+        </tracking:custom-event>
+        <db:update config-ref="MySQL_Configuration" doc:name="UPDATE like">
+            <db:parameterized-query><![CDATA[UPDATE `facebook`.`like` SET
+`parentId` = #[payload['parentId']]
+, `pull_dateTime` = #[sessionVars['syncDateForDb']]
+, `userId` = #[payload['id']]
+WHERE `userId` = #[payload['id']] and `parentId` = #[payload['parentId']];]]></db:parameterized-query>
+        </db:update>
+        <choice doc:name="Choice">
+            <when expression="#[payload == 0]">
+                <set-payload value="#[flowVars.like]" doc:name="Reset Payload"/>
+                <scatter-gather doc:name="Scatter-Gather">
+                    <processor-chain>
+                        <db:insert config-ref="MySQL_Configuration" doc:name="INSERT likes">
+                            <db:parameterized-query><![CDATA[INSERT INTO `facebook`.`like` (`parentId`, `pull_dateTime`, `userId`) 
+VALUES (#[payload['parentId']], #[sessionVars['syncDateForDb']], #[payload['id']]);]]></db:parameterized-query>
+                        </db:insert>
+                        <logger message="#[flow.name] INSERT LIKE for parentId (#[flowVars.'like'.parentId]) from user #[flowVars['like'].'id']" level="INFO" doc:name="Logger"/>
+                    </processor-chain>
+                    <processor-chain>
+                        <message-properties-transformer doc:name="Message Properties">
+                            <add-message-property key="userId" value="#[payload.id]"/>
+                        </message-properties-transformer>
+                        <vm:outbound-endpoint exchange-pattern="one-way" path="user" doc:name="Drop on user queue"/>
+                    </processor-chain>
+                </scatter-gather>
+            </when>
+            <otherwise>
+                <logger message="#[flow.name] UPDATE LIKE for parentId (#[flowVars.'like'.parentId]) from user #[flowVars['like'].'id']" level="INFO" doc:name="Logger"/>
+            </otherwise>
+        </choice>
+    </flow>
+    <flow name="processComment" tracking:enable-default-events="true">
+        <vm:inbound-endpoint exchange-pattern="request-response" path="processcomment" doc:name="receive message"/>
+<!--         <tracking:transaction id="#['processComment-id(' + payload.'id' + ')-parentId(' + payload.'parentId' + ')-page(' + payload.'resultsPageNumber' + ')']"/> -->
+        <set-variable variableName="comment" value="#[payload]" doc:name="Save Comment record"/>
+        <tracking:custom-event event-name="pageInfo" doc:name="Custom Business Event">
+            <tracking:meta-data key="startDate" value="#[sessionVars.startDate]"/>
+            <tracking:meta-data key="endDate" value="#[sessionVars.endDate]"/>
+            <tracking:meta-data key="pageId" value="#[payload.pageId]"/>
+            <tracking:meta-data key="pageName" value="#[payload.pageName]"/>
+            <tracking:meta-data key="postPageResultsPageNumber" value="#[payload.resultsPageNumber]"/>
+            <tracking:meta-data key="parentId" value="#[payload.parentId]"/>
+            <tracking:meta-data key="parentObjectType" value="#[payload.objectType]"/>
+        </tracking:custom-event>
+        <db:update config-ref="MySQL_Configuration" doc:name="Update comment">
+            <db:parameterized-query><![CDATA[UPDATE `facebook`.`comment`
+SET
+`commentId` = #[payload['id']],
+`parentId` = #[flowVars['parentId']],
+`message` = #[payload['message']],
+`userId` = #[payload.from.id],
+`pull_dateTime` = #[sessionVars['syncDateForDb']]
+WHERE `commentId` = #[payload['id']];]]></db:parameterized-query>
+        </db:update>
+        <choice doc:name="Choice">
+            <when expression="#[payload == 0]">
+                <set-payload value="#[flowVars.comment]" doc:name="Reset payload"/>
+                <scatter-gather doc:name="Scatter-Gather">
+                    <processor-chain>
+                        <db:insert config-ref="MySQL_Configuration" doc:name="Insert comment">
+                            <db:parameterized-query><![CDATA[INSERT INTO `facebook`.`comment` 
+(`commentId`, `parentId`, `created_dateTime`, `message`, `userId`, `pull_dateTime`) 
+VALUES (#[payload['id']], #[flowVars['comment'].parentId], #[payload['created_time']], #[payload['message']], #[payload.from.id], #[sessionVars['syncDateForDb']]);]]></db:parameterized-query>
+                        </db:insert>
+                        <logger message="#[flow.name] INSERT COMMENT for parentId (#[flowVars.'comment'.parentId]) from user #[flowVars['comment'].'id']" level="INFO" doc:name="Logger"/>
+                    </processor-chain>
+                    <processor-chain>
+                        <message-properties-transformer doc:name="Message Properties">
+                            <add-message-property key="userId" value="#[payload.from.id]"/>
+                        </message-properties-transformer>
+                        <vm:outbound-endpoint exchange-pattern="one-way" path="user" doc:name="Drop on User queue"/>
+                    </processor-chain>
+                </scatter-gather>
+            </when>
+            <otherwise>
+                <logger message="#[flow.name] UPDATE COMMENT for parentId (#[flowVars.'comment'.parentId]) from user #[flowVars['comment'].'id']" level="INFO" doc:name="Logger"/>
+            </otherwise>
+        </choice>
+    </flow>
+</mule>

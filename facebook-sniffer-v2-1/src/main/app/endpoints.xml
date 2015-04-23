@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.6.1"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+
+<!-- 	<flow name="processAllPages-on-a-timer">
+		<poll doc:name="Poll">
+			<fixed-frequency-scheduler frequency="1"
+				timeUnit="HOURS" startDelay="10"/>
+			<flow-ref name="getUserPages" doc:name="get user pages" />
+		</poll>
+        <expression-component doc:name="set pull variables"><![CDATA[sessionVars.startDate = ${pull.startDate};
+sessionVars.endDate = ${pull.endDate};]]></expression-component>
+		<flow-ref name="processUserPages" doc:name="process user pages" />
+	</flow> -->
+    <flow name="trigger-processAllPages-on-request" tracking:enable-default-events="true">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/processAllPages" doc:name="HTTP"/>
+<!--         <tracking:transaction id="trigger-processAllPages-on-request-#[server.dateTime]"/> -->
+        <expression-component doc:name="set pull variables"><![CDATA[sessionVars.parentId = message.inboundProperties.'http.query.params'.id;
+sessionVars.startDate = message.inboundProperties.'http.query.params'.startDate;
+sessionVars.endDate = message.inboundProperties.'http.query.params'.endDate;]]></expression-component>
+        <tracking:custom-event event-name="Trigger Info" doc:name="Custom Business Event">
+            <tracking:meta-data key="startDate" value="#[message.inboundProperties.'http.query.params'.startDate]"/>
+            <tracking:meta-data key="endDate" value="#[message.inboundProperties.'http.query.params'.endDate]"/>
+        </tracking:custom-event>
+        <flow-ref name="getUserPages" doc:name="getUserPages"/>
+        <set-payload value="Processing Pages" doc:name="Set Payload"/>
+    </flow>
+
+    <flow name="trigger-process-a-page" doc:description="Send in the pageId on as the query string.
+
+example: http://localhost:8081/getPage?54876245094" tracking:enable-default-events="true">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/getPage" doc:name="HTTP"/>
+        <set-payload value="#[[ 'id' : message.inboundProperties['http.query.params'].pageId ]]" doc:name="Set Payload"/>
+        <expression-component doc:name="set pull variables"><![CDATA[sessionVars.parentId = message.inboundProperties.'http.query.params'.id;
+sessionVars.startDate = message.inboundProperties.'http.query.params'.startDate;
+sessionVars.endDate = message.inboundProperties.'http.query.params'.endDate;
+
+message.outboundProperties.pageId = message.inboundProperties.'http.query.params'.pageId;
+message.outboundProperties.pageName = message.inboundProperties.'http.query.params'.pageName;
+message.outboundProperties.pageCount = 0;
+
+//payload.id = message.inboundProperties.['http.query.params'].pageId;]]></expression-component>
+        <tracking:custom-event event-name="Trigger Info" doc:name="Custom Business Event">
+            <tracking:meta-data key="startDate" value="#[message.inboundProperties.'http.query.params'.startDate]"/>
+            <tracking:meta-data key="endDate" value="#[message.inboundProperties.'http.query.params'.endDate]"/>
+            <tracking:meta-data key="pageId" value="message.inboundProperties.'http.query.params'.pageId"/>
+            <tracking:meta-data key="pageName" value="message.inboundProperties.'http.query.params'.pageName"/>
+        </tracking:custom-event>
+        <vm:outbound-endpoint exchange-pattern="one-way" path="processPagePosts" doc:name="send message to process page posts"/>
+        <set-payload value="facebook update has been triggered for dates from #[sessionVars.'startDate'] to #[sessionVars.'endDate']" doc:name="Set Payload"/>
+        <logger level="INFO" doc:name="Logger"/>
+<!--         <tracking:transaction id="trigger-process-a-page-#[server.dateTime]"/> -->
+    </flow>
+	
+    <flow name="trigger-process-likes" doc:description="Send in the postId on as the query string.
+
+example: http://localhost:8081/getLikesForObject?562735083858496_646782528787084" tracking:enable-default-events="true">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/getLikesForObject" doc:name="HTTP"/>
+        <flow-ref name="initSearchParams" doc:name="initSearchParams"/>
+        <message-properties-transformer doc:name="Message Properties" >
+            <add-message-property key="pageCount" value="#[0]"/>
+            <add-message-property key="parentId" value="#[message.inboundProperties.'http.query.string']"/>
+            <add-message-property key="objectType" value="like"/>
+        </message-properties-transformer>
+        <vm:outbound-endpoint exchange-pattern="one-way" path="processEdge" doc:name="send message to process page posts likes"/>
+        <logger level="INFO" doc:name="Logger"/>
+<!--         <tracking:transaction id="#['C' + flow.name + '-' + server.dateTime]"/> -->
+    </flow>
+	
+    <flow name="trigger-process-comments" doc:description="Send in the postId on as the query string.
+
+example: http://localhost:8081/getCommentsForObject?562735083858496_646782528787084" tracking:enable-default-events="true">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/getCommentsForObject" doc:name="HTTP"/>
+        <flow-ref name="initSearchParams" doc:name="initSearchParams"/>
+        <message-properties-transformer doc:name="Message Properties">
+            <add-message-property key="parentId" value="#[message.inboundProperties.'http.query.string']"/>
+            <add-message-property key="pageCount" value="#[0]"/>
+            <add-message-property key="objectType" value="comment"/>
+        </message-properties-transformer>
+        <vm:outbound-endpoint exchange-pattern="one-way" path="processEdge" doc:name="send message to process page posts likes"/>
+        <logger level="INFO" doc:name="Logger"/>
+<!--         <tracking:transaction id="#['D' + flow.name + '-' + server.dateTime]"/> -->
+    </flow></mule>

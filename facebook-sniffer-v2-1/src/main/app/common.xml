@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting" xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:json="http://www.mulesoft.org/schema/mule/json" 
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.6.1"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd">
+    <sub-flow name="getNextPage">
+        <choice doc:name="Choice">
+            <when expression="#[message.outboundProperties.'nextPageQueryString' == null]">
+                <logger message="#[flow.name] No more posts for #[flowVars['pageName']] page" level="INFO" doc:name="Logger"/>
+            </when>
+            <otherwise>
+                <expression-component doc:name="create queryParams"><![CDATA[message.outboundProperties.pageId = flowVars.pageId;
+message.outboundProperties.pageCount = flowVars.pageCount;
+
+//create a list
+queryParams = message.outboundProperties.'nextPageQueryString'.split('&');
+
+flowVars.queryParams = queryParams;
+
+//reset properties
+message.outboundProperties['limit'] = null;
+message.outboundProperties['since'] = null;
+message.outboundProperties['until'] = null;
+message.outboundProperties['__paging_token'] = null;
+message.outboundProperties['version'] = null;	
+
+//#[{'p1':'v1', 'p2':'v2'}]
+queryString = '{ ';
+
+//create individual flowVars for each item in the list
+for(var i = 0; i < queryParams.size(); i++) {
+	param = queryParams[i].split('=');
+	paramLabel = param[0];
+	paramValue = param[1];
+
+	if ( i != 0 ) { queryString = queryString + ', ' };
+	queryString = queryString + '"' + paramLabel + '":"' + paramValue + '"';
+
+	if (paramLabel == 'limit' ) {
+			message.outboundProperties['limit'] = paramValue;
+	} else if (paramLabel ==  'since' ) {
+			message.outboundProperties['since'] = paramValue;
+	} else if (paramLabel ==  'until' ) {
+			message.outboundProperties['until'] = paramValue;
+	} else if (paramLabel ==  '__paging_token') {
+			message.outboundProperties['__paging_token'] = paramValue;
+	} else if (paramLabel ==  'version') {
+			message.outboundProperties['version'] = paramValue;	
+	};
+};
+
+queryString = queryString + ' }';
+message.outboundProperties['queryString'] = queryString;]]></expression-component>
+                <logger message="#[flow.name + ' Get page ' + flowVars.pageCount + ' of posts for ' + flowVars.pageName + ' until ' + message.outboundProperties.'until']" level="INFO" doc:name="Logger"/>
+                <set-payload value="#[null]" doc:name="Set Payload to null"/>
+                <vm:outbound-endpoint exchange-pattern="one-way" path="#[flowVars.'flowName']" doc:name="get next page"/>
+            </otherwise>
+        </choice>
+    </sub-flow>
+    <flow name="facebook-set-access-token" processingStrategy="synchronous">
+        <set-property propertyName="Authorization" value="#['Bearer ${facebook.api.access_token}']" doc:name="Set authorization header"/>
+    </flow>
+    <flow name="initSearchParams">
+        <set-session-variable variableName="syncDateForDb" value="#[sessionVars.endDate] 00:00:00" doc:name="Create Db Version of Date"/>
+    </flow>
+    <flow name="nullFlow">
+        <logger level="INFO" doc:name="Logger"/>
+    </flow>
+</mule>

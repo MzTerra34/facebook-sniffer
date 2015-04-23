@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?><Graph __version="3.5.0" author="emmanuelteodoro" created="Tue Mar 31 10:30:27 ART 2015" description="Json To Map" guiVersion="3.4.4.P" id="1427905255681" licenseCode="Unlicensed" licenseType="Unknown" modified="Tue Mar 31 10:30:27 ART 2015" modifiedBy="emmanuelteodoro" name="Json_To_Map" revision="1.0" showComponentDetails="false">
+<Global>
+<Metadata __index="3" __referenceCounter="0" __sourcePath="{}/object/category_x005flist" _dataStructure="SINGLE_DIMENSIONAL_COLLECTION" _id="__id" _metadataParentId="6b485e80-20ae-440c-9077-b4b4c6c29216" _parent_id="__parent_id" _type="Input" id="3d86f012-ad79-4807-ba18-09a1d152f0f8">
+<Record fieldDelimiter="," name="category_list" recordDelimiter="\n\\|\r\n\\|\r" type="delimited">
+<Field __artificialType="_parent_id" __systemManaged="true" name="__parent_id" type="string"/>
+<Field __artificialType="_id" __systemManaged="true" name="__id" type="string"/>
+<Field __implementationClass="java.lang.String" __index="3" __sourcePath="{}/object/category_x005flist/id" containerType="SINGLE" label="id" name="id" type="string"/>
+<Field __implementationClass="java.lang.String" __index="4" __sourcePath="{}/object/category_x005flist/name" containerType="SINGLE" label="name" name="name" type="string"/>
+</Record>
+</Metadata>
+<Metadata __index="0" __referenceCounter="1" __sourcePath="{}/Map" _dataStructure="OBJECT" _id="__id" _type="Output" id="f3c7930b-e999-4428-9a66-d7b158115cca">
+<Record fieldDelimiter="," name="Map" recordDelimiter="\n\\|\r\n\\|\r" type="delimited">
+<Field __artificialType="_id" __systemManaged="true" name="__id" type="string"/>
+<Field __implementationClass="java.lang.String" __index="0" __sourcePath="{}/Map/best_x005fpage_x005fid" containerType="SINGLE" label="best_page_id" name="best_page_id" type="string"/>
+<Field __implementationClass="java.lang.String" __index="1" __sourcePath="{}/Map/checkins" containerType="SINGLE" label="checkins" name="checkins" type="string"/>
+<Field __implementationClass="java.lang.String" __index="2" __sourcePath="{}/Map/phone" containerType="SINGLE" label="phone" name="phone" type="string"/>
+<Field __implementationClass="java.lang.String" __index="3" __sourcePath="{}/Map/website" containerType="SINGLE" label="website" name="website" type="string"/>
+<Field __implementationClass="java.lang.String" __index="4" __sourcePath="{}/Map/link" containerType="SINGLE" label="link" name="link" type="string"/>
+<Field __implementationClass="java.lang.String" __index="5" __sourcePath="{}/Map/about" containerType="SINGLE" label="about" name="about" type="string"/>
+<Field __implementationClass="java.lang.String" __index="6" __sourcePath="{}/Map/id" containerType="SINGLE" label="id" name="id" type="string"/>
+<Field __implementationClass="java.lang.String" __index="7" __sourcePath="{}/Map/global_x005fbrand_x005fparent_x005fpage_x005fid" containerType="SINGLE" label="global_brand_parent_page_id" name="global_brand_parent_page_id" type="string"/>
+<Field __implementationClass="java.lang.String" __index="8" __sourcePath="{}/Map/founded" containerType="SINGLE" label="founded" name="founded" type="string"/>
+<Field __implementationClass="java.lang.String" __index="9" __sourcePath="{}/Map/category" containerType="SINGLE" label="category" name="category" type="string"/>
+<Field __implementationClass="java.lang.String" __index="10" __sourcePath="{}/Map/username" containerType="SINGLE" label="username" name="username" type="string"/>
+<Field __implementationClass="java.lang.String" __index="11" __sourcePath="{}/Map/mission" containerType="SINGLE" label="mission" name="mission" type="string"/>
+<Field __implementationClass="java.lang.String" __index="12" __sourcePath="{}/Map/global_x005fbrand_x005fpage_x005fname" containerType="SINGLE" label="global_brand_page_name" name="global_brand_page_name" type="string"/>
+<Field __implementationClass="java.lang.String" __index="13" __sourcePath="{}/Map/category_x005flist" containerType="SINGLE" label="category_list" name="category_list" type="string"/>
+<Field __implementationClass="java.lang.String" __index="14" __sourcePath="{}/Map/description" containerType="SINGLE" label="description" name="description" type="string"/>
+<Field __implementationClass="java.lang.String" __index="15" __sourcePath="{}/Map/likes" containerType="SINGLE" label="likes" name="likes" type="string"/>
+<Field __implementationClass="java.lang.String" __index="16" __sourcePath="{}/Map/name" containerType="SINGLE" label="name" name="name" type="string"/>
+<Field __implementationClass="java.lang.String" __index="17" __sourcePath="{}/Map/press_x005fcontact" containerType="SINGLE" label="press_contact" name="press_contact" type="string"/>
+<Field __implementationClass="java.lang.String" __index="18" __sourcePath="{}/Map/pull_x005fdateTime" containerType="SINGLE" label="pull_dateTime" name="pull_dateTime" type="string"/>
+<Field __implementationClass="java.lang.String" __index="19" __sourcePath="{}/Map/were_x005fhere_x005fcount" containerType="SINGLE" label="were_here_count" name="were_here_count" type="string"/>
+<Field __implementationClass="java.lang.String" __index="20" __sourcePath="{}/Map/talking_x005fabout_x005fcount" containerType="SINGLE" label="talking_about_count" name="talking_about_count" type="string"/>
+</Record>
+</Metadata>
+<Metadata __index="0" __referenceCounter="1" __sourcePath="{}/object" _dataStructure="OBJECT" _id="__id" _type="Input" id="6b485e80-20ae-440c-9077-b4b4c6c29216">
+<Record fieldDelimiter="," name="object" recordDelimiter="\n\\|\r\n\\|\r" type="delimited">
+<Field __artificialType="_id" __systemManaged="true" name="__id" type="string"/>
+<Field __implementationClass="java.lang.String" __index="0" __sourcePath="{}/object/about" containerType="SINGLE" label="about" name="about" type="string"/>
+<Field __implementationClass="java.lang.Boolean" __index="1" __sourcePath="{}/object/can_x005fpost" containerType="SINGLE" label="can_post" name="can_post" type="boolean"/>
+<Field __implementationClass="java.lang.String" __index="2" __sourcePath="{}/object/category" containerType="SINGLE" label="category" name="category" type="string"/>
+<Field __implementationClass="java.lang.Integer" __index="5" __sourcePath="{}/object/checkins" containerType="SINGLE" label="checkins" name="checkins" type="integer"/>
+<Field __implementationClass="java.lang.String" __index="6" __sourcePath="{}/object/cover/cover_x005fid" containerType="SINGLE" label="cover_id" name="cover_id" type="string"/>
+<Field __implementationClass="java.lang.String" __index="7" __sourcePath="{}/object/cover/id" containerType="SINGLE" label="id" name="id" type="string"/>
+<Field __implementationClass="java.lang.Integer" __index="8" __sourcePath="{}/object/cover/offset_x005fx" containerType="SINGLE" label="offset_x" name="offset_x" type="integer"/>
+<Field __implementationClass="java.lang.Integer" __index="9" __sourcePath="{}/object/cover/offset_x005fy" containerType="SINGLE" label="offset_y" name="offset_y" type="integer"/>
+<Field __implementationClass="java.lang.String" __index="10" __sourcePath="{}/object/cover/source" containerType="SINGLE" label="source" name="source" type="string"/>
+<Field __implementationClass="java.lang.String" __index="11" __sourcePath="{}/object/description" containerType="SINGLE" label="description" name="description" type="string"/>
+<Field __implementationClass="java.lang.String" __index="12" __sourcePath="{}/object/founded" containerType="SINGLE" label="founded" name="founded" type="string"/>
+<Field __implementationClass="java.lang.Boolean" __index="13" __sourcePath="{}/object/has_x005fadded_x005fapp" containerType="SINGLE" label="has_added_app" name="has_added_app" type="boolean"/>
+<Field __implementationClass="java.lang.String" __index="14" __sourcePath="{}/object/id" containerType="SINGLE" label="id" name="id_1" type="string"/>
+<Field __implementationClass="java.lang.Boolean" __index="15" __sourcePath="{}/object/is_x005fcommunity_x005fpage" containerType="SINGLE" label="is_community_page" name="is_community_page" type="boolean"/>
+<Field __implementationClass="java.lang.Boolean" __index="16" __sourcePath="{}/object/is_x005fpublished" containerType="SINGLE" label="is_published" name="is_published" type="boolean"/>
+<Field __implementationClass="java.lang.Integer" __index="17" __sourcePath="{}/object/likes" containerType="SINGLE" label="likes" name="likes" type="integer"/>
+<Field __implementationClass="java.lang.String" __index="18" __sourcePath="{}/object/link" containerType="SINGLE" label="link" name="link" type="string"/>
+<Field __implementationClass="java.lang.String" __index="19" __sourcePath="{}/object/location/city" containerType="SINGLE" label="city" name="city" type="string"/>
+<Field __implementationClass="java.lang.String" __index="20" __sourcePath="{}/object/location/country" containerType="SINGLE" label="country" name="country" type="string"/>
+<Field __implementationClass="java.lang.Number" __index="21" __sourcePath="{}/object/location/latitude" containerType="SINGLE" label="latitude" name="latitude" type="number"/>
+<Field __implementationClass="java.lang.Number" __index="22" __sourcePath="{}/object/location/longitude" containerType="SINGLE" label="longitude" name="longitude" type="number"/>
+<Field __implementationClass="java.lang.String" __index="23" __sourcePath="{}/object/location/street" containerType="SINGLE" label="street" name="street" type="string"/>
+<Field __implementationClass="java.lang.String" __index="24" __sourcePath="{}/object/location/zip" containerType="SINGLE" label="zip" name="zip" type="string"/>
+<Field __implementationClass="java.lang.String" __index="25" __sourcePath="{}/object/mission" containerType="SINGLE" label="mission" name="mission" type="string"/>
+<Field __implementationClass="java.lang.String" __index="26" __sourcePath="{}/object/name" containerType="SINGLE" label="name" name="name" type="string"/>
+<Field __implementationClass="java.lang.Integer" __index="27" __sourcePath="{}/object/parking/lot" containerType="SINGLE" label="lot" name="lot" type="integer"/>
+<Field __implementationClass="java.lang.Integer" __index="28" __sourcePath="{}/object/parking/street" containerType="SINGLE" label="street" name="street_1" type="integer"/>
+<Field __implementationClass="java.lang.Integer" __index="29" __sourcePath="{}/object/parking/valet" containerType="SINGLE" label="valet" name="valet" type="integer"/>
+<Field __implementationClass="java.lang.Integer" __index="30" __sourcePath="{}/object/talking_x005fabout_x005fcount" containerType="SINGLE" label="talking_about_count" name="talking_about_count" type="integer"/>
+<Field __implementationClass="java.lang.String" __index="31" __sourcePath="{}/object/username" containerType="SINGLE" label="username" name="username" type="string"/>
+<Field __implementationClass="java.lang.String" __index="32" __sourcePath="{}/object/website" containerType="SINGLE" label="website" name="website" type="string"/>
+<Field __implementationClass="java.lang.Integer" __index="33" __sourcePath="{}/object/were_x005fhere_x005fcount" containerType="SINGLE" label="were_here_count" name="were_here_count" type="integer"/>
+</Record>
+</Metadata>
+<Dictionary>
+<Entry id="DictionaryEntry0" input="true" name="inputPayload" output="false" type="object"/>
+<Entry id="DictionaryEntry1" input="false" name="outputPayload" output="true" type="object"/>
+</Dictionary>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiName="Foreach 'object' -&gt; 'Map'" guiX="460" guiY="20" id="FOREACH_OBJECT_MAP" transformClass="com.mulesoft.datamapper.transform.MelRecordTransform" type="REFORMAT">
+<attr name="melScript"><![CDATA[//MEL
+//START -> DO NOT REMOVE
+output.__id = input.__id;
+//END -> DO NOT REMOVE
+output.about = input.about;
+output.category = input.category;
+output.checkins = num2str(input.checkins);
+output.description = input.description;
+output.founded = input.founded;
+output.likes = num2str(input.likes);
+output.link = input.link;
+output.mission = input.mission;
+output.name = input.name;
+output.talking_about_count = num2str(input.talking_about_count);
+output.username = input.username;
+output.website = input.website;
+output.were_here_count = num2str(input.were_here_count);
+output.id = input.id_1;]]></attr>
+</Node>
+<Node charset="UTF-8" enabled="enabled" fileURL="dict:inputPayload" guiName="JSON READER" guiX="20" guiY="20" id="JSON_READER0" type="JSON_READER">
+<attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Context xpath="/root">
+  <Context outPort="0" sequenceField="__id" xpath="object">
+    <Mapping cloverField="about" trim="true" xpath="about"/>
+    <Mapping cloverField="can_post" trim="true" xpath="can_x005fpost"/>
+    <Mapping cloverField="category" trim="true" xpath="category"/>
+    <Mapping cloverField="checkins" trim="true" xpath="checkins"/>
+    <Mapping cloverField="cover_id" trim="true" xpath="cover/cover_x005fid"/>
+    <Mapping cloverField="id" trim="true" xpath="cover/id"/>
+    <Mapping cloverField="offset_x" trim="true" xpath="cover/offset_x005fx"/>
+    <Mapping cloverField="offset_y" trim="true" xpath="cover/offset_x005fy"/>
+    <Mapping cloverField="source" trim="true" xpath="cover/source"/>
+    <Mapping cloverField="description" trim="true" xpath="description"/>
+    <Mapping cloverField="founded" trim="true" xpath="founded"/>
+    <Mapping cloverField="has_added_app" trim="true" xpath="has_x005fadded_x005fapp"/>
+    <Mapping cloverField="id_1" trim="true" xpath="id"/>
+    <Mapping cloverField="is_community_page" trim="true" xpath="is_x005fcommunity_x005fpage"/>
+    <Mapping cloverField="is_published" trim="true" xpath="is_x005fpublished"/>
+    <Mapping cloverField="likes" trim="true" xpath="likes"/>
+    <Mapping cloverField="link" trim="true" xpath="link"/>
+    <Mapping cloverField="city" trim="true" xpath="location/city"/>
+    <Mapping cloverField="country" trim="true" xpath="location/country"/>
+    <Mapping cloverField="latitude" trim="true" xpath="location/latitude"/>
+    <Mapping cloverField="longitude" trim="true" xpath="location/longitude"/>
+    <Mapping cloverField="street" trim="true" xpath="location/street"/>
+    <Mapping cloverField="zip" trim="true" xpath="location/zip"/>
+    <Mapping cloverField="mission" trim="true" xpath="mission"/>
+    <Mapping cloverField="name" trim="true" xpath="name"/>
+    <Mapping cloverField="lot" trim="true" xpath="parking/lot"/>
+    <Mapping cloverField="street_1" trim="true" xpath="parking/street"/>
+    <Mapping cloverField="valet" trim="true" xpath="parking/valet"/>
+    <Mapping cloverField="talking_about_count" trim="true" xpath="talking_x005fabout_x005fcount"/>
+    <Mapping cloverField="username" trim="true" xpath="username"/>
+    <Mapping cloverField="website" trim="true" xpath="website"/>
+    <Mapping cloverField="were_here_count" trim="true" xpath="were_x005fhere_x005fcount"/>
+  </Context>
+</Context>
+]]></attr>
+<attr name="_data_format"><![CDATA[JSON]]></attr>
+<attr name="__metadata"><![CDATA[true]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="dict:outputPayload" guiName="Map&lt;k,v&gt; WRITER" guiX="900" guiY="20" id="MAP_WRITER0" type="MAP_WRITER">
+<attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<Map xmlns:clover="http://www.cloveretl.com/ns/xmlmapping" clover:inPort="0">
+  <clover:element clover:name="best_page_id" clover:dataType="java.lang.String">$0.best_page_id</clover:element>
+  <checkins clover:dataType="java.lang.String">$0.checkins</checkins>
+  <phone clover:dataType="java.lang.String">$0.phone</phone>
+  <website clover:dataType="java.lang.String">$0.website</website>
+  <link clover:dataType="java.lang.String">$0.link</link>
+  <about clover:dataType="java.lang.String">$0.about</about>
+  <id clover:dataType="java.lang.String">$0.id</id>
+  <clover:element clover:name="global_brand_parent_page_id" clover:dataType="java.lang.String">$0.global_brand_parent_page_id</clover:element>
+  <founded clover:dataType="java.lang.String">$0.founded</founded>
+  <category clover:dataType="java.lang.String">$0.category</category>
+  <username clover:dataType="java.lang.String">$0.username</username>
+  <mission clover:dataType="java.lang.String">$0.mission</mission>
+  <clover:element clover:name="global_brand_page_name" clover:dataType="java.lang.String">$0.global_brand_page_name</clover:element>
+  <clover:element clover:name="category_list" clover:dataType="java.lang.String">$0.category_list</clover:element>
+  <description clover:dataType="java.lang.String">$0.description</description>
+  <likes clover:dataType="java.lang.String">$0.likes</likes>
+  <name clover:dataType="java.lang.String">$0.name</name>
+  <clover:element clover:name="press_contact" clover:dataType="java.lang.String">$0.press_contact</clover:element>
+  <clover:element clover:name="pull_dateTime" clover:dataType="java.lang.String">$0.pull_dateTime</clover:element>
+  <clover:element clover:name="were_here_count" clover:dataType="java.lang.String">$0.were_here_count</clover:element>
+  <clover:element clover:name="talking_about_count" clover:dataType="java.lang.String">$0.talking_about_count</clover:element>
+</Map>]]></attr>
+<attr name="__typeName"><![CDATA[INSERT INTO `facebook`.`brand_page`
+(`id`,`category`,`checkins`,`likes`,`link`,`name`,`talking_about_count`,`were_here_count`,`username`,`about`,`category_list`,`description`,`founded`,`global_brand_page_name`,`mission`,`phone`,`press_contact`,`website`,
+`best_page_id`,`global_brand_parent_page_id`,`pull_dateTime`)
+VALUES
+(#[payload.id],#[payload.category],#[payload.checkins],#[payload.likes],#[payload.link],#[payload.name],#[payload.talking_about_count],#[payload.were_here_count],#[payload.username],#[payload.about],#[payload.category_list],#[payload.description],#[payload.founded],#[payload.global_brand_page_name],#[payload.mission],#[payload.phone],#[payload.press_contact],#[payload.website],#[payload.best_page_id],#[payload.global_brand_parent_page_id],#[payload.pull_dateTime]);]]></attr>
+<attr name="_data_format"><![CDATA[MAP]]></attr>
+<attr name="__metadata"><![CDATA[true]]></attr>
+<attr name="__operationName"><![CDATA[http://www.mulesoft.org/schema/mule/db/insert]]></attr>
+<attr name="__connectorName"><![CDATA[MySQL_Configuration]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="FOREACH_OBJECT_MAP:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="f3c7930b-e999-4428-9a66-d7b158115cca" outPort="Port 0 (out)" toNode="MAP_WRITER0:0"/>
+<Edge debugMode="true" fromNode="JSON_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="6b485e80-20ae-440c-9077-b4b4c6c29216" outPort="Port 0 (out)" toNode="FOREACH_OBJECT_MAP:0"/>
+</Phase>
+</Graph>

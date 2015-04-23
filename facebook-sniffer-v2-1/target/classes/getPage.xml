@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting" xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:data-mapper="http://www.mulesoft.org/schema/mule/ee/data-mapper"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db" 
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.6.1"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/data-mapper http://www.mulesoft.org/schema/mule/ee/data-mapper/current/mule-data-mapper.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd">
+	<data-mapper:config name="Json_To_Map"
+		transformationGraphPath="json_to_map.grf" doc:name="Json_To_Map" />
+	<flow name="processPage" processingStrategy="synchronous" tracking:enable-default-events="true">
+        <logger message="processPage-#[payload.id]" level="INFO" doc:name="Logger"/>
+<!--         <tracking:transaction id="processPage-#[payload.id]"/> -->
+        <tracking:custom-event event-name="processPage" doc:name="Start Business Event">
+            <tracking:meta-data key="pageId" value="#[payload.id]]"/>
+        </tracking:custom-event>
+		<scatter-gather doc:name="Scatter-Gather">
+			<processor-chain>
+				<http:request config-ref="HTTP_Facebook_API" path="/{page_id}"
+					method="GET" doc:name="Get page">
+					<http:request-builder>
+                        <http:query-param paramName="limit" value="250"/>
+                        <http:uri-param paramName="page_id" value="#[payload.id]"/>
+                        <http:header headerName="Authorization" value="Bearer ${facebook.api.access_token}"/>
+					</http:request-builder>
+				</http:request>
+				<data-mapper:transform config-ref="Json_To_Map"
+					doc:name="Json To Map" />
+                <set-variable variableName="page" value="#[payload]" doc:name="Save page"/>
+                <db:update config-ref="MySQL_Configuration" doc:name="UPDATE Page">
+                    <db:parameterized-query><![CDATA[UPDATE `facebook`.`brand_page` SET
+`category` = #[payload.category]
+,`checkins` = #[payload.checkins]
+,`likes` = #[payload.likes]
+,`link` = #[payload.link]
+,`name` = #[payload.name]
+,`talking_about_count` = #[payload.talking_about_count]
+,`were_here_count` = #[payload.were_here_count]
+,`username` = #[payload.username]
+,`about` = #[payload.about]
+,`category_list` = #[payload.category_list]
+,`description` = #[payload.description]
+,`founded` = #[payload.founded]
+,`global_brand_page_name` = #[payload.global_brand_page_name]
+,`mission` = #[payload.mission]
+,`phone` = #[payload.phone]
+,`press_contact` = #[payload.press_contact]
+,`website` = #[payload.website]
+,`best_page_id` = #[payload.best_page_id]
+,`global_brand_parent_page_id` = #[payload.global_brand_parent_page_id]
+,`pull_dateTime` = #[flowVars.syncDateForDb]
+WHERE `id` = #[payload.id];]]></db:parameterized-query>
+                </db:update>
+                <choice doc:name="Choice">
+                    <when expression="#[payload == 0]">
+                        <set-payload value="#[flowVars.page]" doc:name="Reset Payload"/>
+                        <db:insert config-ref="MySQL_Configuration" doc:name="Insert Page">
+                            <db:parameterized-query><![CDATA[INSERT INTO `facebook`.`brand_page`
+(`id`,`category`,`checkins`,`likes`,`link`,`name`,`talking_about_count`,`were_here_count`,`username`,`about`,`category_list`,`description`,`founded`,`global_brand_page_name`,`mission`,`phone`,`press_contact`,`website`,
+`best_page_id`,`global_brand_parent_page_id`,`pull_dateTime`)
+VALUES
+(#[payload.id],#[payload.category],#[payload.checkins],#[payload.likes],#[payload.link],#[payload.name],#[payload.talking_about_count],#[payload.were_here_count],#[payload.username],#[payload.about],#[payload.category_list],#[payload.description],#[payload.founded],#[payload.global_brand_page_name],#[payload.mission],#[payload.phone],#[payload.press_contact],#[payload.website],#[payload.best_page_id],#[payload.global_brand_parent_page_id],#[flowVars.sync_date]);]]></db:parameterized-query>
+                        </db:insert>
+                        <logger message="Page INSERT for #[flowVars.page.name] (#[flowVars.page.id])" level="INFO" doc:name="Logger"/>
+                    </when>
+                    <otherwise>
+                        <logger message="Page UPDATE for #[flowVars.page.name] (#[flowVars.page.id])" level="INFO" doc:name="Logger"/>
+                    </otherwise>
+                </choice>
+			</processor-chain>
+            <processor-chain>
+                <message-properties-transformer doc:name="Message Properties">
+                    <add-message-property key="pageId" value="#[payload.id]"/>
+                    <add-message-property key="pageName" value="#[payload.name]"/>
+                    <add-message-property key="pageCount" value="#[0]"/>
+                </message-properties-transformer>
+                <vm:outbound-endpoint exchange-pattern="one-way" path="processPagePosts" doc:name="send message to process page posts"/>
+            </processor-chain>
+		</scatter-gather>
+		<catch-exception-strategy doc:name="Catch Exception Strategy">
+			<logger message="Invalid JSON" level="INFO" doc:name="Logger" />
+		</catch-exception-strategy>
+	</flow>
+</mule>

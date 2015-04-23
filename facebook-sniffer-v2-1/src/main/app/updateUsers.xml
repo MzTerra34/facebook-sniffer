@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting" xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:json="http://www.mulesoft.org/schema/mule/json" 
+	xmlns:db="http://www.mulesoft.org/schema/mule/db" 
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.6.1"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd">
+	<flow name="updateUser" tracking:enable-default-events="true">
+        <vm:inbound-endpoint exchange-pattern="one-way" path="user" doc:name="receive message"/>
+<!--         <tracking:transaction id="updateUser-#[payload.userId + '-' + server.dateTime]"/> -->
+        <set-variable variableName="userId" value="#[message.inboundProperties.'userId']" doc:name="Save userId"/>
+        <db:update config-ref="MySQL_Configuration" doc:name="UPDATE user">
+            <db:parameterized-query><![CDATA[UPDATE `facebook`.`user` SET `userId` = #[flowVars.'userId']
+WHERE `userId` = #[flowVars.'userId'];]]></db:parameterized-query>
+        </db:update>
+             <choice doc:name="Choice">
+                 <when expression="#[payload != 1]">
+                <db:insert config-ref="MySQL_Configuration" doc:name="INSERT user">
+                    <db:parameterized-query><![CDATA[INSERT INTO `facebook`.`user` (`userId`) 
+VALUES (#[flowVars.'userId']);]]></db:parameterized-query>
+                </db:insert>
+                <logger message="#[flow.name] INSERT new user (#[flowVars.'userId']) " level="INFO" doc:name="Logger"/>
+                     </when>
+                     <otherwise>
+                <logger message="#[flow.name] UPDATE user (#[flowVars.'userId']) " level="INFO" doc:name="Logger"/>
+                     </otherwise>
+                 </choice>
+	</flow>
+</mule>

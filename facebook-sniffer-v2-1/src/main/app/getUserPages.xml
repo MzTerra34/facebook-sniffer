@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting" xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:data-mapper="http://www.mulesoft.org/schema/mule/ee/data-mapper"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db" 
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.6.1"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/data-mapper http://www.mulesoft.org/schema/mule/ee/data-mapper/current/mule-data-mapper.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd">
+	<flow processingStrategy="synchronous"  name="getUserPages" tracking:enable-default-events="true">
+		<set-payload value="#[['test': ''] ]" doc:name="Set Payload" />
+        <set-property propertyName="Authorization" value="#['Bearer ${facebook.api.access_token}']" doc:name="Property"/>
+		<http:request config-ref="HTTP_Facebook_API" path="/{user_id}/accounts"
+			method="GET" doc:name="Get pages for current user">
+			<http:request-builder>
+                <http:query-param paramName="limit" value="${facebook.api.limit}"/>
+                <http:uri-param paramName="user_id" value="me"/>
+                <http:header headerName="Authorization" value="Bearer ${facebook.api.access_token}"/>
+			</http:request-builder>
+		</http:request>
+        <json:json-to-object-transformer returnClass="java.util.Map" doc:name="JSON to Object"/>
+        <set-payload value="#[payload['data']]" doc:name="extract page collection"/>
+        <tracking:custom-event event-name="User Pages" doc:name="Custom Business Event">
+            <tracking:meta-data key="pageCount" value="#[payload.size()]"/>
+        </tracking:custom-event>
+        <foreach doc:name="For Each User Page">
+            <message-properties-transformer doc:name="Message Properties">
+                <add-message-property key="pageId" value="#[payload.id]"/>
+                <add-message-property key="pageName" value="#[payload.name]"/>
+                <add-message-property key="pageCount" value="#[0 - 0]"/>
+            </message-properties-transformer>
+            <flow-ref name="processPage" doc:name="Process Page"/>
+        </foreach>
+        <logger message="#[flow.name] retrieved #[payload.size()] pages" level="INFO" doc:name="Logger"/>
+<!--         <tracking:transaction id="#['getUserPages-' + server.dateTime]"/> -->
+	</flow>
+<!-- 	<flow processingStrategy="synchronous"  name="sf-import-users"> -->
+<!-- 		<db:select config-ref="MySQL_Configuration" doc:name="Get users from likes and comments"> -->
+<!-- 			<db:parameterized-query><![CDATA[select userId from (select userId from facebook.comment union DISTINCT select userId from facebook.like) as temp;]]></db:parameterized-query> -->
+<!-- 		</db:select> -->
+<!-- 		<foreach doc:name="For Each"> -->
+<!-- 			<http:request config-ref="HTTP_Facebook_API" path="/{user_id}" -->
+<!-- 				method="GET" doc:name="Get user information"> -->
+<!-- 				<http:request-builder> -->
+<!--                     <http:uri-param paramName="user_id" value="#[payload.userId]"/> -->
+<!--                     <http:header headerName="Authorization" value="Bearer ${facebook.api.access_token}"/> -->
+<!-- 				</http:request-builder> -->
+<!-- 			</http:request> -->
+<!-- 		</foreach> -->
+<!-- 	</flow> -->
+
+</mule>
